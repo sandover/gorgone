@@ -35,8 +35,8 @@ class RRBVector
 		virtual bool isFull()=0;
 		virtual unsigned int size()=0;
 		virtual unsigned int level()=0;
-		virtual const node_ptr add(const T &value)=0;
-		virtual const node_ptr pop()=0;
+		virtual const node_ptr push_back(const T &value)=0;
+		virtual const node_ptr pop_back()=0;
 		virtual unsigned int lastIndex()=0;
 		virtual const T &get(unsigned int pos)=0;
 		virtual bool hasOnlyOne()=0;
@@ -90,14 +90,14 @@ class RRBVector
 		unsigned int level() {return 0;}
 
 
-		const node_ptr add(const T &value) {
+		const node_ptr push_back(const T &value) {
 				node_ptr result (new LeafBranch(_data, _size,_size+1));
 				LeafBranch *newNode= static_cast<LeafBranch *> (result.get());
 				newNode->_data[_size]=value;
 				return result;
 		};
 
-		const node_ptr pop() {
+		const node_ptr pop_back() {
 			if (_size==1)
 				return node_ptr();
 			return node_ptr(new LeafBranch(_data,_size-1,_size-1));
@@ -185,7 +185,7 @@ class RRBVector
 			return (node->level()+5==_level)&&(node->isFull());
 		};
 
-		const node_ptr add(const T &value)
+		const node_ptr push_back(const T &value)
 		{
 			if (isSubnodeFull(_data[_size-1].get()))
 				{
@@ -215,7 +215,7 @@ class RRBVector
 					newChild=_data[_size-1];
 				}
 				MidBranch *resultBranch=static_cast<MidBranch *>(result.get());
-				resultBranch->_data[_size-1]=newChild->add(value);
+				resultBranch->_data[_size-1]=newChild->push_back(value);
 				resultBranch->_indexes[_size-1]=_indexes[_size-1]+1;
 				return result;
 			}
@@ -225,9 +225,9 @@ class RRBVector
 			return _size==1;
 		}
 
-		const node_ptr pop()
+		const node_ptr pop_back()
 		{
-			node_ptr newChild=_data[_size-1]->pop();
+			node_ptr newChild=_data[_size-1]->pop_back();
 			if (newChild)
 			{
 				node_ptr result(new MidBranch(_data,_indexes,_size-1,_size,_level));
@@ -255,7 +255,7 @@ class RRBVector
 
 	node_ptr _root;
 	public:
-	RRBVector<T> add(const T &value)
+	RRBVector<T> push_back(const T &value)
 	{
 		RRBVector<T> newVector;
 		if (!_root)
@@ -272,19 +272,19 @@ class RRBVector
 				MidBranch *rootData=static_cast<MidBranch *>(nextRoot.get());
 				rootData->_data[0]=_root;
 				rootData->_indexes[0]=_root->lastIndex();
-				newVector._root=nextRoot->add(value);
+				newVector._root=nextRoot->push_back(value);
 			}
 			else
-				newVector._root=_root->add(value);
+				newVector._root=_root->push_back(value);
 		}
 		return newVector;
 	};
 
-	RRBVector<T> pop() {
+	RRBVector<T> pop_back() {
 		RRBVector<T> result;
 		if (!_root)
 			throw "";
-			result._root=_root->pop();
+			result._root=_root->pop_back();
 		return result;
 	}
 	unsigned int size() {

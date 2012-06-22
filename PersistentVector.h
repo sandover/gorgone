@@ -41,10 +41,10 @@ public:
 		virtual ~Branch() {};
 		Node_vector getArray() {return array;};
 	};
-	unsigned int _cnt;
-	unsigned int _shift;
-	Node_ptr _root;
-	Node_vector _tail;
+	mutable unsigned int _cnt;
+	mutable unsigned int _shift;
+	mutable Node_ptr _root;
+	mutable Node_vector _tail;
 
 	public:
 	PersistentVector<T>() :
@@ -53,33 +53,35 @@ public:
 	PersistentVector<T>(unsigned int cnt, unsigned int shift, Node_ptr root, Node_vector &tail):
 		_cnt(cnt),_shift(shift),_root(root),_tail(tail) {}
 
-	unsigned int tailoff(){
+	unsigned int tailoff() const{
 		if(_cnt < 32)
 			return 0;
 		return ((_cnt - 1) >> 5) << 5;
 	};
 
+unsigned int size() const {return _cnt;}
 
-unsigned int size() {return _cnt;}
-
- T get(unsigned int i) {
-		if(i >= 0 && i < _cnt)
+T get(unsigned int i) const {
+		if(//i >= 0 &&
+			 i < _cnt)
 		{
 			Node_vector array;
 			if(i < tailoff()) {
 				Node_ptr node = _root;
 				for(int level = _shift; level > 0; level -= 5)
-					node = dynamic_cast<Branch *> (node.get())->getArray()[(i >> level) & 0x01f];
-				array=dynamic_cast<Branch *> (node.get())->getArray();
+					node = static_cast<Branch *> (node.get())->getArray()[(i >> level) & 0x01f];
+				array=static_cast<Branch *> (node.get())->getArray();
 			}
 			else
 				array=_tail;
-			return dynamic_cast<Leaf *> (array[i & 0x01f].get())->getValue();
+			return static_cast<Leaf *> (array[i & 0x01f].get())->getValue();
 		}
 		throw VectorException();
 	};
 
-PersistentVector<T> put(unsigned int pos, const T &val){
+inline T operator[] (unsigned int i) const  { return get (i); }
+
+PersistentVector<T> put(unsigned int pos, const T &val) const {
 	if(pos >= 0 && pos < _cnt)
 			{
 			PersistentVector<T> newVector(*this);
@@ -97,7 +99,7 @@ PersistentVector<T> put(unsigned int pos, const T &val){
 	}
 
 Node_ptr doPut(unsigned int level, Node_ptr node,unsigned int pos, const T &val) {
-	Node_vector array= dynamic_cast<Branch *>(node.get())->getArray();
+	Node_vector array= static_cast<Branch *>(node.get())->getArray();
 	if(level == 0)
 				{
 				array[pos & 0x01f] = Node_ptr(new Leaf(val));
@@ -110,7 +112,7 @@ Node_ptr doPut(unsigned int level, Node_ptr node,unsigned int pos, const T &val)
 			return Node_ptr(new Branch(array));
 		}
 
-PersistentVector<T> add(const T &val){
+PersistentVector<T> push_back(const T &val) const {
 		//room in tail?
 		// if(tail.length < 32)
 		if(_cnt - tailoff() < 32)
@@ -142,7 +144,7 @@ PersistentVector<T> add(const T &val){
 	}
 
 
-	Node_ptr createPath(unsigned int level, Node_ptr &node) {
+	Node_ptr createPath(unsigned int level, Node_ptr &node) const {
 		if (level==0)
 			return node;
 		Node_vector array;
@@ -151,9 +153,9 @@ PersistentVector<T> add(const T &val){
 		return createPath(level-5,new_node);
 	};
 
-	Node_ptr pushTail(unsigned int level, Node_ptr &parent, Node_ptr &tailnode){
+	Node_ptr pushTail(unsigned int level, Node_ptr &parent, Node_ptr &tailnode) const {
 		unsigned int subidx = ((_cnt - 1) >> level) & 0x01f;
-		Branch *parent_branch= dynamic_cast<Branch *> (parent.get());
+		Branch *parent_branch= static_cast<Branch *> (parent.get());
 		Node_vector array = parent_branch->getArray();
 		Node_ptr newNode;
 		if(level == 5)
@@ -176,7 +178,7 @@ PersistentVector<T> add(const T &val){
 		return Node_ptr(new Branch(array));
 	};
 
-	PersistentVector<T> pop() {
+	PersistentVector<T> pop() const {
 		if (_cnt == 0)
 			throw VectorException();
 		if (_cnt == 1)
@@ -203,15 +205,15 @@ PersistentVector<T> add(const T &val){
 		return newVector;
 	}
 
-	Node_vector findTail() {
+	Node_vector findTail() const {
 		unsigned int pos = _cnt-2;
 		Node_ptr node=_root;
 		for (int i=_shift; i>0; i-=5)
-			node=dynamic_cast<Branch *> (node.get())->getArray()[(pos >> i) & 0x01f];
-		return dynamic_cast<Branch *> (node.get())->getArray();
+			node=static_cast<Branch *> (node.get())->getArray()[(pos >> i) & 0x01f];
+		return static_cast<Branch *> (node.get())->getArray();
 	};
 
-	Node_ptr popRoot(unsigned int level,Node_ptr &node) {
+	Node_ptr popRoot(unsigned int level,Node_ptr &node) const {
 		unsigned int pos = _cnt-2;
 		unsigned int subidx = (pos >> level) & 0x01f;
 		Node_vector array = static_cast<Branch *> (node.get())->getArray();
@@ -225,6 +227,15 @@ PersistentVector<T> add(const T &val){
 
 		return Node_ptr(new Branch(array));
 	};
+
+	bool operator == (const PersistentVector &other)  const {
+		for (int i = 0; i < size (); i++) {
+			if (get(i) != other.get(i))
+				return false;
+		}
+		return true;
+  	}
+
 };
 
 template<typename T>

@@ -27,7 +27,7 @@ struct test {
 		sal << "Running" << std::endl;
 		while (v.size()!=0) {
 				sal << "pop " << it << "." << v.get(v.size()-1) << std::endl;
-			v=v.pop();
+			v=v.pop_back();
 
 		}
 		sal << "End" << std::endl;
@@ -46,14 +46,14 @@ int main() {
 		for (int i=0; i<10000;i++) {
 			if (i>0)
 				v=v2.get(i-1);
-			v=v.add(i);
-			v2=v2.add(v);
+			v=v.push_back(i);
+			v2=v2.push_back(v);
 		}
 
 		for (int i=9998; i>=0; i--)
 				{
-					v2=v2.pop();
-		//			std::cout << v2.size() << ": " << v2.get(i).get(i) << std::endl;
+					v2=v2.pop_back();
+					std::cout << v2.size() << ": " << v2.get(i).get(i) << std::endl;
 				}
 		finish = clock();
 		std::cout << "RRBVector with long     >> " << (finish-start) << std::endl;
@@ -67,8 +67,8 @@ int main() {
 		for (int i=0; i< 10000;i++) {
 			if (i>0)
 				v=v2.get(i-1);
-			v=v.add(i);
-			v2=v2.add(v);}
+			v=v.push_back(i);
+			v2=v2.push_back(v);}
 
 
 		for (int i=9998; i>=0; i--)
@@ -128,13 +128,13 @@ int main() {
 		for (int i=0; i< 10000;i++) {
 			if (i>0)
 				v=v2.get(i-1);
-			v=v.add(block());
-			v2=v2.add(v);}
+			v=v.push_back(block());
+			v2=v2.push_back(v);}
 
 
 		for (int i=9998; i>=0; i--)
 		{
-			v2=v2.pop();
+			v2=v2.pop_back();
 		//	std::cout << v2.size() << ": " << v2.get(i).get(i) << std::endl;
 		}
 		finish = clock();
@@ -149,8 +149,8 @@ int main() {
 		for (int i=0; i< 10000;i++) {
 			if (i>0)
 				v=v2.get(i-1);
-			v=v.add(block());
-			v2=v2.add(v);}
+			v=v.push_back(block());
+			v2=v2.push_back(v);}
 
 
 		for (int i=9998; i>=0; i--)
@@ -205,7 +205,7 @@ int main() {
 	{
 		test f;
 		for (int i=0; i< 10000; i++)
-			f.v=f.v.add(i);
+			f.v = f.v.push_back(i);
 		std::vector<boost::thread *> threads;
 		for (int i=0; i< 20; i++)
 		{

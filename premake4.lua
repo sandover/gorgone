@@ -3,17 +3,16 @@
 -- Author: Brandon Harvey <brandon@oblong.com>
 --
 -- To build:
---     # Generate a Makefile
---     premake4 gmake
+--     premake4 gmake  # Generates a GNU Makefile
 --
---     # Have a look at what the Makefile can do for you
+--     # Know your options
 --     make help
 --
---     # Choose the configuration: 'debug' or 'release'.  Default: debug
---     make config=debug verbose=1
+--     # Builds the default configuration, which is debug
+--     make
 --
---     # To use clang, add CXX=clang CC=clang to the make line
---     make config=debug verbose=1 CXX=clang CC=clang
+--     # Clang?  cores?  etc.
+--     make CXX=clang CC=clang -j4 verbose=1
 --
 solution "gorgone"
    configurations { "Debug", "Release" }
@@ -28,21 +27,21 @@ solution "gorgone"
       linkoptions { "-pthread" }
 
       configuration "Debug"
-           defines "DEBUG"
+           defines   "DEBUG"
            flags   { "Symbols", "ExtraWarnings" }
 
       configuration "Release"
-           defines "NDEBUG"
+           defines   "NDEBUG"
            flags   { "OptimizeSpeed", "ExtraWarnings", "FatalWarnings" }
 
       configuration "linux"
-          -- todo: these are wrong, just placeholders
-          includedirs { "/usr/local/include/boost/" } 
-          libdirs { "/usr/local/lib/" }
+          -- todo: these paths are wrong, just placeholders
+          includedirs { "/usr/local/include/boost/" }
+          libdirs     { "/usr/local/lib/" }
 
       configuration "macosx"
           -- This is geared only to clang 3.1
           --buildoptions { "-std=c++0x", "-stdlib=libc++", "-Wno-c++11-extensions" }
           includedirs { "/usr/local/include/boost/" }
-          libdirs { "/usr/local/lib/" }
-          links   { "stdc++" }
+          libdirs     { "/usr/local/lib/" }
+          links       { "stdc++" }

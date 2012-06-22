@@ -24,7 +24,7 @@ solution "gorgone"
       includedirs  { "." }
 
       links { "boost_thread-mt" }
-      linkoptions { "-pthread" }
+      --linkoptions { "-pthread" }
 
       configuration "Debug"
            defines   "DEBUG"
